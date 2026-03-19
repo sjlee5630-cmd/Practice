@@ -130,3 +130,92 @@ st.markdown("""
 # -----------------------------
 with st.expander("📂 데이터 보기"):
     st.dataframe(filtered_df)
+import streamlit as st
+import pandas as pd
+import numpy as np
+
+st.set_page_config(page_title="THMs 대시보드", layout="wide")
+
+st.title("💧 수도권 THMs 관리 대시보드")
+
+# -----------------------------
+# 샘플 데이터
+# -----------------------------
+@st.cache_data
+def load_data():
+    np.random.seed(42)
+
+    regions = ["서울", "경기", "인천"]
+    data = []
+
+    for r in regions:
+        value = np.random.uniform(2, 6)
+
+        if r == "경기":
+            value += 1.5
+
+        data.append({
+            "지역": r,
+            "THMs": round(value, 2)
+        })
+
+    return pd.DataFrame(data)
+
+df = load_data()
+
+# -----------------------------
+# 지역별 그래프
+# -----------------------------
+st.subheader("🌍 지역별 THMs 비교")
+
+st.bar_chart(df.set_index("지역"))
+
+# -----------------------------
+# 지역 선택 (그래프 클릭 대체 UX)
+# -----------------------------
+st.subheader("🔗 지역 선택 → 공공 홈페이지 이동")
+
+selected_region = st.radio(
+    "지역을 선택하세요",
+    df["지역"].tolist(),
+    horizontal=True
+)
+
+# -----------------------------
+# URL 매핑
+# -----------------------------
+region_urls = {
+    "서울": "https://www.seoul.go.kr",
+    "경기": "https://www.gg.go.kr",
+    "인천": "https://www.incheon.go.kr"
+}
+
+url = region_urls[selected_region]
+
+# -----------------------------
+# 이동 버튼
+# -----------------------------
+st.markdown(f"👉 선택한 지역: **{selected_region}**")
+
+st.link_button("🌐 해당 지자체 홈페이지 바로가기", url)
+
+# -----------------------------
+# 자동 이동 옵션 (선택)
+# -----------------------------
+if st.checkbox("자동으로 이동하기"):
+    st.markdown(
+        f'<meta http-equiv="refresh" content="0; url={url}">',
+        unsafe_allow_html=True
+    )
+
+# -----------------------------
+# 정책 인사이트
+# -----------------------------
+st.subheader("🧠 정책 인사이트")
+
+if selected_region == "경기":
+    st.warning("경기 지역은 THMs 위험도가 상대적으로 높습니다 → 우선 관리 필요")
+elif selected_region == "서울":
+    st.success("서울은 비교적 안정적 관리 상태")
+else:
+    st.info("인천은 중간 수준 관리 필요")
