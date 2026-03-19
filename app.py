@@ -219,3 +219,87 @@ elif selected_region == "서울":
     st.success("서울은 비교적 안정적 관리 상태")
 else:
     st.info("인천은 중간 수준 관리 필요")
+import streamlit as st
+import pandas as pd
+import pydeck as pdk
+
+st.set_page_config(page_title="THMs 지도 대시보드", layout="wide")
+
+st.title("🗺️ 수도권 THMs 지도 기반 대시보드")
+
+# -----------------------------
+# 지역 데이터
+# -----------------------------
+data = pd.DataFrame({
+    "지역": ["서울", "경기", "인천"],
+    "위도": [37.5665, 37.4138, 37.4563],
+    "경도": [126.9780, 127.5183, 126.7052],
+    "THMs": [3.2, 5.1, 4.0]
+})
+
+# -----------------------------
+# 지도 시각화
+# -----------------------------
+st.subheader("📍 지역 클릭 (지도)")
+
+layer = pdk.Layer(
+    "ScatterplotLayer",
+    data=data,
+    get_position='[경도, 위도]',
+    get_radius=30000,
+    get_fill_color='[200, 30, 0, 160]',
+    pickable=True
+)
+
+view_state = pdk.ViewState(
+    latitude=37.5,
+    longitude=127.0,
+    zoom=7
+)
+
+deck = pdk.Deck(
+    layers=[layer],
+    initial_view_state=view_state,
+    tooltip={"text": "{지역}\nTHMs: {THMs}"}
+)
+
+st.pydeck_chart(deck)
+
+# -----------------------------
+# 클릭 대체 UX (선택)
+# -----------------------------
+st.subheader("🔗 지역 선택")
+
+selected_region = st.selectbox(
+    "지도에서 확인한 지역 선택",
+    data["지역"]
+)
+
+# -----------------------------
+# URL 매핑
+# -----------------------------
+region_urls = {
+    "서울": "https://www.seoul.go.kr",
+    "경기": "https://www.gg.go.kr",
+    "인천": "https://www.incheon.go.kr"
+}
+
+url = region_urls[selected_region]
+
+# -----------------------------
+# 이동 버튼
+# -----------------------------
+st.markdown(f"👉 선택 지역: **{selected_region}**")
+st.link_button("🌐 홈페이지 이동", url)
+
+# -----------------------------
+# 정책 인사이트
+# -----------------------------
+st.subheader("🧠 정책 인사이트")
+
+if selected_region == "경기":
+    st.error("🚨 경기: 고위험 지역 → 집중 관리 필요")
+elif selected_region == "서울":
+    st.success("✅ 서울: 안정적 관리")
+else:
+    st.warning("⚠️ 인천: 중간 수준 관리 필요")
