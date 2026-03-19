@@ -4,3 +4,6 @@ numpy
 streamlit
 pandas
 numpy
+streamlit
+pandas
+pydeck
